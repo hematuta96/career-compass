@@ -74,30 +74,53 @@ export default function App() {
     setPage('landing');
   };
 
-  const handleAuth = async (type: 'login' | 'signup') => {
-    setLoading(true);
-    setError('');
-    try {
-      const res = await fetch(`/api/${type}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(authForm)
-      });
-      const data = await res.json();
-      if (data.success) {
-        const userData = type === 'signup' ? { id: data.userId, ...authForm } : data.user;
-        setUser(userData);
-        localStorage.setItem('cc_user', JSON.stringify(userData));
+const handleAuth = async (type: 'login' | 'signup') => {
+  setLoading(true);
+  setError('');
+
+  try {
+    if (type === 'signup') {
+
+      const newUser = {
+        id: Date.now(),
+        name: authForm.name,
+        email: authForm.email,
+        password: authForm.password
+      };
+
+      localStorage.setItem('cc_user', JSON.stringify(newUser));
+      setUser(newUser);
+      setPage('dashboard');
+
+    } else {
+
+      const storedUser = localStorage.getItem('cc_user');
+
+      if (!storedUser) {
+        setError('No account found. Please sign up first.');
+        return;
+      }
+
+      const user = JSON.parse(storedUser);
+
+      if (
+        user.email === authForm.email &&
+        user.password === authForm.password
+      ) {
+        setUser(user);
         setPage('dashboard');
       } else {
-        setError(data.message);
+        setError('Invalid email or password');
       }
-    } catch (err) {
-      setError('Connection error. Please try again.');
-    } finally {
-      setLoading(false);
+
     }
-  };
+
+  } catch (err) {
+    setError('Something went wrong');
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleAnalyze = async () => {
     if (!user) return;

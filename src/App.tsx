@@ -104,23 +104,35 @@ export default function App() {
     setLoading(true);
     setError('');
     try {
-      const res = await fetch('/api/analyze', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId: user.id,
-          role: analysisForm.role,
-          portfolioLink: analysisForm.portfolioLink,
-          skills: analysisForm.selectedSkills
-        })
-      });
-      const data = await res.json();
-      if (data.success) {
-        setResult(data);
-        setPage('results');
-      } else {
-        setError(data.message);
-      }
+      const requiredSkills = [
+  "HTML",
+  "CSS",
+  "JavaScript",
+  "React",
+  "Git",
+  "API",
+  "Responsive"
+];
+
+const userSkills = analysisForm.selectedSkills;
+
+const score = Math.round((userSkills.length / requiredSkills.length) * 100);
+
+const missing = requiredSkills.filter(
+  skill => !userSkills.includes(skill)
+);
+
+const data = {
+  success: true,
+  score: score,
+  missingSkills: missing,
+  role: analysisForm.role,
+  suggested: true,
+  recommendations: []
+};
+
+setResult(data);
+setPage('results');
     } catch (err) {
       setError('Analysis failed. Please try again.');
     } finally {

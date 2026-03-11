@@ -122,46 +122,175 @@ const handleAuth = async (type: 'login' | 'signup') => {
   }
 };
 
-  const handleAnalyze = async () => {
-    if (!user) return;
-    setLoading(true);
-    setError('');
-    try {
-      const requiredSkills = [
-  "HTML",
-  "CSS",
-  "JavaScript",
-  "React",
-  "Git",
-  "API",
-  "Responsive"
-];
+const handleAnalyze = async () => {
+  if (!user) return;
 
-const userSkills = analysisForm.selectedSkills;
+  setLoading(true);
+  setError('');
 
-const score = Math.round((userSkills.length / requiredSkills.length) * 100);
+  try {
 
-const missing = requiredSkills.filter(
-  skill => !userSkills.includes(skill)
-);
+    const requiredSkills = [
+      "HTML",
+      "CSS",
+      "JavaScript",
+      "React",
+      "Git",
+      "API Integration",
+      "Responsive Design"
+    ];
 
-const data = {
-  success: true,
-  score: score,
-  missingSkills: missing,
-  role: analysisForm.role,
-  suggested: true,
-  recommendations: []
-};
+    let detectedSkills = [...analysisForm.selectedSkills];
 
-setResult(data);
-setPage('results');
-    } catch (err) {
-      setError('Analysis failed. Please try again.');
-    } finally {
-      setLoading(false);
+    const link = analysisForm.portfolioLink;
+
+    // detect github repo
+    const githubMatch = link.match(/github\.com\/([^\/]+)\/([^\/]+)/);
+
+    // detect github profile
+    const profileMatch = link.match(/github\.com\/([^\/]+)$/);
+
+    if (githubMatch) {
+
+      const owner = githubMatch[1];
+      const repo = githubMatch[2];
+
+      const repoData = await fetch(
+        `https://api.github.com/repos/${owner}/${repo}`
+      ).then(r => r.json());
+
+      const languages = await fetch(
+        `https://api.github.com/repos/${owner}/${repo}/languages`
+      ).then(r => r.json());
+
+      const languageMap:any = {
+        JavaScript: "JavaScript",
+        HTML: "HTML",
+        CSS: "CSS",
+        TypeScript: "JavaScript"
+      };
+
+      const repoSkills = Object.keys(languages)
+        .map(lang => languageMap[lang])
+        .filter(Boolean);
+
+      detectedSkills = [...new Set([...detectedSkills, ...repoSkills])];
+
+      const repoText =
+        (repoData.name + " " + (repoData.description || "")).toLowerCase();
+
+      if (repoText.includes("react")) detectedSkills.push("React");
+      if (repoText.includes("api")) detectedSkills.push("API Integration");
+      if (repoText.includes("responsive")) detectedSkills.push("Responsive Design");
+
+      detectedSkills.push("Git");
+
     }
-  };
+
+    // github profile analysis
+    else if (profileMatch) {
+
+      const username = profileMatch[1];
+
+      const repos = await fetch(
+        `https://api.github.com/users/${username}/repos`
+      ).then(r => r.json());
+
+      let languagesCollected:any = {};
+
+      for (const repo of repos.slice(0,5)) {
+
+        const langs = await fetch(repo.languages_url).then(r => r.json());
+
+        Object.keys(langs).forEach(lang => {
+          languagesCollected[lang] = true;
+        });
+
+      }
+
+      const languageMap:any = {
+        JavaScript: "JavaScript",
+        HTML: "HTML",
+        CSS: "CSS",
+        TypeScript: "JavaScript"
+      };
+
+      const repoSkills = Object.keys(languagesCollected)
+        .map(lang => languageMap[lang])
+        .filter(Boolean);
+
+      detectedSkills = [...new Set([...detectedSkills, ...repoSkills])];
+
+      detectedSkills.push("Git");
+    }
+
+    const uniqueSkills = [...new Set(detectedSkills)];
+
+    const score = Math.round(
+      (uniqueSkills.length / requiredSkills.length) * 100
+    );
+
+    const missingSkills = requiredSkills.filter(
+      skill => !uniqueSkills.includes(skill)
+    );
+
+    let level = "Beginner";
+
+    if (score >= 70) level = "Advanced";
+    else if (score >= 40) level = "Intermediate";
+
+    const courseMap:any = {
+      React: {
+        skill: "React",
+        name: "React Basics",
+        platform: "Coursera",
+        duration: "6 hours",
+        link: "https://www.coursera.org/learn/react-basics"
+      },
+      Git: {
+        skill: "Git",
+        name: "Git & GitHub",
+        platform: "Coursera",
+        duration: "4 hours",
+        link: "https://www.coursera.org/learn/introduction-git-github"
+      },
+      "API Integration": {
+        skill: "API Integration",
+        name: "REST API Development",
+        platform: "Coursera",
+        duration: "5 hours",
+        link: "https://www.coursera.org/learn/rest-api"
+      },
+      "Responsive Design": {
+        skill: "Responsive Design",
+        name: "Responsive Web Design",
+        platform: "freeCodeCamp",
+        duration: "8 hours",
+        link: "https://www.freecodecamp.org/learn/responsive-web-design/"
+      }
+    };
+
+    const recommendations = missingSkills
+      .map(skill => courseMap[skill])
+      .filter(Boolean);
+
+    const data = {
+      role: analysisForm.role + ` (${level})`,
+      suggested: true,
+      readinessScore: score,
+      missingSkills: missingSkills,
+      recommendations: recommendations
+    };
+
+    setResult(data);
+    setPage('results');
+
+  } catch (err) {
+    setError('Analysis failed. Please try again.');
+  } finally {
+    setLoading(false);
+  }
+};
 
   const toggleSkill = (skill: string) => {
     setAnalysisForm(prev => ({

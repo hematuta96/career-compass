@@ -75,12 +75,25 @@ export default function App() {
   };
 
 const handleAuth = async (type: 'login' | 'signup') => {
+  console.log("Auth function triggered", type);
+
   setLoading(true);
   setError('');
 
   try {
 
+    const storedUsers = JSON.parse(localStorage.getItem("cc_users") || "[]");
+
     if (type === 'signup') {
+
+      const existingUser = storedUsers.find(
+        (u:any) => u.email === authForm.email
+      );
+
+      if (existingUser) {
+        setError("User already exists. Please login.");
+        return;
+      }
 
       const newUser = {
         id: Date.now(),
@@ -89,31 +102,28 @@ const handleAuth = async (type: 'login' | 'signup') => {
         password: authForm.password
       };
 
-      localStorage.setItem("cc_user", JSON.stringify(newUser));
+      const updatedUsers = [...storedUsers, newUser];
+
+      localStorage.setItem("cc_users", JSON.stringify(updatedUsers));
 
       setUser(newUser);
       setPage("dashboard");
 
     } else {
 
-      const storedUser = localStorage.getItem("cc_user");
+      const foundUser = storedUsers.find(
+        (u:any) =>
+          u.email === authForm.email &&
+          u.password === authForm.password
+      );
 
-      if (!storedUser) {
-        setError("No account found. Please sign up first.");
+      if (!foundUser) {
+        setError("Invalid email or password");
         return;
       }
 
-      const userData = JSON.parse(storedUser);
-
-      if (
-        userData.email === authForm.email &&
-        userData.password === authForm.password
-      ) {
-        setUser(userData);
-        setPage("dashboard");
-      } else {
-        setError("Invalid email or password");
-      }
+      setUser(foundUser);
+      setPage("dashboard");
 
     }
 
@@ -460,6 +470,7 @@ const handleAnalyze = async () => {
                   )}
 
                   <button 
+                  type="button"
                     onClick={() => handleAuth(page as 'login' | 'signup')}
                     disabled={loading}
                     className="w-full py-4 bg-emerald-500 text-white rounded-xl font-bold hover:bg-emerald-400 transition-all shadow-lg shadow-emerald-500/20 disabled:opacity-50 mt-4"

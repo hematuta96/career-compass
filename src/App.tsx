@@ -79,6 +79,7 @@ const handleAuth = async (type: 'login' | 'signup') => {
   setError('');
 
   try {
+
     if (type === 'signup') {
 
       const newUser = {
@@ -88,35 +89,36 @@ const handleAuth = async (type: 'login' | 'signup') => {
         password: authForm.password
       };
 
-      localStorage.setItem('cc_user', JSON.stringify(newUser));
+      localStorage.setItem("cc_user", JSON.stringify(newUser));
+
       setUser(newUser);
-      setPage('dashboard');
+      setPage("dashboard");
 
     } else {
 
-      const storedUser = localStorage.getItem('cc_user');
+      const storedUser = localStorage.getItem("cc_user");
 
       if (!storedUser) {
-        setError('No account found. Please sign up first.');
+        setError("No account found. Please sign up first.");
         return;
       }
 
-      const user = JSON.parse(storedUser);
+      const userData = JSON.parse(storedUser);
 
       if (
-        user.email === authForm.email &&
-        user.password === authForm.password
+        userData.email === authForm.email &&
+        userData.password === authForm.password
       ) {
-        setUser(user);
-        setPage('dashboard');
+        setUser(userData);
+        setPage("dashboard");
       } else {
-        setError('Invalid email or password');
+        setError("Invalid email or password");
       }
 
     }
 
   } catch (err) {
-    setError('Something went wrong');
+    setError("Something went wrong");
   } finally {
     setLoading(false);
   }

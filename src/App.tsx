@@ -38,13 +38,111 @@ interface AnalysisResult {
 }
 
 const SKILLS_LIST = [
-  "HTML", "CSS", "JavaScript", "React", "Git", "API Integration", "Responsive Design"
+  // Frontend
+  "HTML",
+  "CSS",
+  "JavaScript",
+  "TypeScript",
+  "React",
+  "Next.js",
+  "Responsive Design",
+
+  // Backend
+  "Node.js",
+  "Express.js",
+  "REST API",
+  "Authentication",
+
+  // Database
+  "MongoDB",
+  "MySQL",
+  "PostgreSQL",
+
+  // Programming
+  "Python",
+  "Java",
+  "C++",
+
+  // Data
+  "Pandas",
+  "NumPy",
+  "Machine Learning",
+
+  // Tools
+  "Git",
+  "Docker",
+  "AWS"
 ];
 
 const ROLES_LIST = [
-  "Frontend Developer", "Software Engineer", "Data Analyst", "UI/UX Designer", "Not thought yet"
+  "Frontend Developer",
+  "Backend Developer",
+  "Full Stack Developer",
+  "Software Engineer",
+  "Data Analyst",
+  "Data Scientist",
+  "Machine Learning Engineer",
+  "UI/UX Designer",
+  "Mobile App Developer",
+  "DevOps Engineer",
+  "Cloud Engineer",
+  "Cybersecurity Analyst",
+  "AI Engineer",
+  "Product Manager",
+  "Not thought yet"
 ];
+const ROLE_SKILLS: any = {
+  "Frontend Developer": [
+    "HTML",
+    "CSS",
+    "JavaScript",
+    "React",
+    "Responsive Design",
+    "REST API",
+    "Git"
+  ],
 
+  "Backend Developer": [
+    "Node.js",
+    "Express.js",
+    "MongoDB",
+    "REST API",
+    "Authentication",
+    "Git"
+  ],
+
+  "Full Stack Developer": [
+    "HTML",
+    "CSS",
+    "JavaScript",
+    "React",
+    "Node.js",
+    "MongoDB",
+    "REST API",
+    "Git"
+  ],
+
+  "Data Analyst": [
+    "Python",
+    "Pandas",
+    "NumPy",
+    "MySQL"
+  ],
+
+  "Data Scientist": [
+    "Python",
+    "Pandas",
+    "NumPy",
+    "Machine Learning"
+  ],
+
+  "Machine Learning Engineer": [
+    "Python",
+    "Machine Learning",
+    "NumPy",
+    "Pandas"
+  ]
+};
 export default function App() {
   const [page, setPage] = useState<Page>('landing');
   const [user, setUser] = useState<UserData | null>(null);
@@ -106,8 +204,15 @@ const handleAuth = async (type: 'login' | 'signup') => {
 
       localStorage.setItem("cc_users", JSON.stringify(updatedUsers));
 
-      setUser(newUser);
-      setPage("dashboard");
+      // ✅ clear signup fields
+      setAuthForm({
+        name: "",
+        email: "",
+        password: ""
+      });
+
+      // ✅ go to login page instead of dashboard
+      setPage("login");
 
     } else {
 
@@ -123,6 +228,14 @@ const handleAuth = async (type: 'login' | 'signup') => {
       }
 
       setUser(foundUser);
+
+      // clear login fields
+      setAuthForm({
+        name: "",
+        email: "",
+        password: ""
+      });
+
       setPage("dashboard");
 
     }
@@ -142,15 +255,8 @@ const handleAnalyze = async () => {
 
   try {
 
-    const requiredSkills = [
-      "HTML",
-      "CSS",
-      "JavaScript",
-      "React",
-      "Git",
-      "API Integration",
-      "Responsive Design"
-    ];
+    const requiredSkills =
+  ROLE_SKILLS[analysisForm.role] || ROLE_SKILLS["Frontend Developer"];
 
     let detectedSkills = [...analysisForm.selectedSkills];
 
@@ -237,57 +343,145 @@ const handleAnalyze = async () => {
     }
 
     const uniqueSkills = [...new Set(detectedSkills)];
+    
+let recommendedRole = analysisForm.role;
 
-    const score = Math.round(
-      (uniqueSkills.length / requiredSkills.length) * 100
-    );
+if (analysisForm.role === "Not thought yet") {
 
-    const missingSkills = requiredSkills.filter(
-      skill => !uniqueSkills.includes(skill)
-    );
+  if (uniqueSkills.includes("Python") && uniqueSkills.includes("Machine Learning")) {
+    recommendedRole = "Machine Learning Engineer";
+  }
+
+  else if (uniqueSkills.includes("Python")) {
+    recommendedRole = "Data Analyst";
+  }
+
+  else if (uniqueSkills.includes("Node.js") || uniqueSkills.includes("Express.js")) {
+    recommendedRole = "Backend Developer";
+  }
+
+  else if (uniqueSkills.includes("Figma")) {
+    recommendedRole = "UI/UX Designer";
+  }
+
+  else if (uniqueSkills.includes("React") || uniqueSkills.includes("JavaScript")) {
+    recommendedRole = "Frontend Developer";
+  }
+
+  else {
+    recommendedRole = "Software Engineer";
+  }
+
+}
+const matchedSkills = uniqueSkills.filter(skill =>
+  requiredSkills.includes(skill)
+);
+
+const score = Math.min(
+  100,
+  Math.round((matchedSkills.length / requiredSkills.length) * 100)
+);
+
+const missingSkills = requiredSkills.filter(
+  skill => !matchedSkills.includes(skill)
+);
 
     let level = "Beginner";
 
     if (score >= 70) level = "Advanced";
     else if (score >= 40) level = "Intermediate";
 
-    const courseMap:any = {
-      React: {
-        skill: "React",
-        name: "React Basics",
-        platform: "Coursera",
-        duration: "6 hours",
-        link: "https://www.coursera.org/learn/react-basics"
-      },
-      Git: {
-        skill: "Git",
-        name: "Git & GitHub",
-        platform: "Coursera",
-        duration: "4 hours",
-        link: "https://www.coursera.org/learn/introduction-git-github"
-      },
-      "API Integration": {
-        skill: "API Integration",
-        name: "REST API Development",
-        platform: "Coursera",
-        duration: "5 hours",
-        link: "https://www.coursera.org/learn/rest-api"
-      },
-      "Responsive Design": {
-        skill: "Responsive Design",
-        name: "Responsive Web Design",
-        platform: "freeCodeCamp",
-        duration: "8 hours",
-        link: "https://www.freecodecamp.org/learn/responsive-web-design/"
-      }
-    };
+const courseMap: any = {
+
+  React: {
+    skill: "React",
+    name: "React Basics",
+    platform: "Coursera",
+    duration: "6 hours",
+    link: "https://www.coursera.org/learn/react-basics"
+  },
+
+  "Node.js": {
+    skill: "Node.js",
+    name: "Node.js Backend Development",
+    platform: "Coursera",
+    duration: "10 hours",
+    link: "https://www.coursera.org/learn/server-side-nodejs"
+  },
+
+  MongoDB: {
+    skill: "MongoDB",
+    name: "MongoDB Basics",
+    platform: "MongoDB University",
+    duration: "6 hours",
+    link: "https://learn.mongodb.com/"
+  },
+
+  "REST API": {
+    skill: "REST API",
+    name: "Build REST APIs with Node.js",
+    platform: "Coursera",
+    duration: "7 hours",
+    link: "https://www.coursera.org/learn/rest-api-nodejs"
+  },
+
+  Authentication: {
+    skill: "Authentication",
+    name: "JWT Authentication Guide",
+    platform: "freeCodeCamp",
+    duration: "3 hours",
+    link: "https://www.freecodecamp.org/news/jwt-authentication-tutorial/"
+  },
+
+  Python: {
+    skill: "Python",
+    name: "Python for Everybody",
+    platform: "Coursera",
+    duration: "12 hours",
+    link: "https://www.coursera.org/specializations/python"
+  },
+
+  Pandas: {
+    skill: "Pandas",
+    name: "Data Analysis with Pandas",
+    platform: "Coursera",
+    duration: "6 hours",
+    link: "https://www.coursera.org/learn/data-analysis-with-python"
+  },
+
+  NumPy: {
+    skill: "NumPy",
+    name: "NumPy Full Course",
+    platform: "freeCodeCamp",
+    duration: "4 hours",
+    link: "https://www.freecodecamp.org/news/learn-numpy-full-course/"
+  },
+
+  MySQL: {
+    skill: "MySQL",
+    name: "SQL for Data Science",
+    platform: "Coursera",
+    duration: "5 hours",
+    link: "https://www.coursera.org/learn/sql-for-data-science"
+  },
+
+  "Machine Learning": {
+    skill: "Machine Learning",
+    name: "Machine Learning by Andrew Ng",
+    platform: "Coursera",
+    duration: "20 hours",
+    link: "https://www.coursera.org/learn/machine-learning"
+  }
+
+};
 
     const recommendations = missingSkills
       .map(skill => courseMap[skill])
-      .filter(Boolean);
+      .filter(Boolean)
+      .slice(0,3);
 
     const data = {
-      role: analysisForm.role + ` (${level})`,
+      role: recommendedRole + ` (${level})`,
       suggested: true,
       readinessScore: score,
       missingSkills: missingSkills,

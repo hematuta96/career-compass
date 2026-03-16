@@ -343,6 +343,21 @@ const handleAnalyze = async () => {
     }
 
     const uniqueSkills = [...new Set(detectedSkills)];
+    if (uniqueSkills.length === 0) {
+
+  const data = {
+    role: "Not thought yet",
+    suggested: false,
+    readinessScore: 0,
+    missingSkills: [],
+    recommendations: []
+  };
+
+  setResult(data);
+  setPage("results");
+  setLoading(false);
+  return;
+}
     
 let recommendedRole = analysisForm.role;
 

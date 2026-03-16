@@ -62,7 +62,7 @@ https://github.com/hematutaa96/career-compass
 • GitHub profile skill graph visualization  
 • Personalized learning roadmap  
 • Database based authentication
-                                                     ## 👩‍💻 Author
-                                                     **Hema Tuta**
-                               B.Tech Student | Learning Web Development | Building projects
-                              ⭐ If you like this project, consider giving it a star!
+## 👩‍💻 Author
+**Hema Tuta**
+B.Tech Student | Learning Web Development | Building projects
+⭐ If you like this project, consider giving it a star!

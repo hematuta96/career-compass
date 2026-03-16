@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Compass, 
-  LayoutDashboard, 
-  User, 
-  LogOut, 
-  CheckCircle2, 
-  AlertCircle, 
-  ExternalLink, 
-  Github, 
+import {
+  Compass,
+  LayoutDashboard,
+  User,
+  LogOut,
+  CheckCircle2,
+  AlertCircle,
+  ExternalLink,
+  Github,
   Briefcase,
   ChevronRight,
   BookOpen,
@@ -148,7 +148,7 @@ export default function App() {
   const [user, setUser] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  
+
   // Form States
   const [authForm, setAuthForm] = useState({ name: '', email: '', password: '' });
   const [analysisForm, setAnalysisForm] = useState({
@@ -172,346 +172,333 @@ export default function App() {
     setPage('landing');
   };
 
-const handleAuth = async (type: 'login' | 'signup') => {
-  console.log("Auth function triggered", type);
+  const handleAuth = async (type: 'login' | 'signup') => {
 
-  setLoading(true);
-  setError('');
+    setLoading(true);
+    setError('');
 
-  try {
+    try {
 
-    const storedUsers = JSON.parse(localStorage.getItem("cc_users") || "[]");
+      const storedUsers = JSON.parse(localStorage.getItem("cc_users") || "[]");
 
-    if (type === 'signup') {
+      if (type === 'signup') {
 
-      const existingUser = storedUsers.find(
-        (u:any) => u.email === authForm.email
-      );
+        const existingUser = storedUsers.find(
+          (u: any) => u.email === authForm.email
+        );
 
-      if (existingUser) {
-        setError("User already exists. Please login.");
-        return;
-      }
+        if (existingUser) {
+          setError("User already exists. Please login.");
+          return;
+        }
 
-      const newUser = {
-        id: Date.now(),
-        name: authForm.name,
-        email: authForm.email,
-        password: authForm.password
-      };
+        const newUser = {
+          id: Date.now(),
+          name: authForm.name,
+          email: authForm.email,
+          password: authForm.password
+        };
 
-      const updatedUsers = [...storedUsers, newUser];
+        const updatedUsers = [...storedUsers, newUser];
 
-      localStorage.setItem("cc_users", JSON.stringify(updatedUsers));
+        localStorage.setItem("cc_users", JSON.stringify(updatedUsers));
 
-      // ✅ clear signup fields
-      setAuthForm({
-        name: "",
-        email: "",
-        password: ""
-      });
-
-      // ✅ go to login page instead of dashboard
-      setPage("login");
-
-    } else {
-
-      const foundUser = storedUsers.find(
-        (u:any) =>
-          u.email === authForm.email &&
-          u.password === authForm.password
-      );
-
-      if (!foundUser) {
-        setError("Invalid email or password");
-        return;
-      }
-
-      setUser(foundUser);
-
-      // clear login fields
-      setAuthForm({
-        name: "",
-        email: "",
-        password: ""
-      });
-
-      setPage("dashboard");
-
-    }
-
-  } catch (err) {
-    setError("Something went wrong");
-  } finally {
-    setLoading(false);
-  }
-};
-
-const handleAnalyze = async () => {
-  if (!user) return;
-
-  setLoading(true);
-  setError('');
-
-  try {
-
-    const requiredSkills =
-  ROLE_SKILLS[analysisForm.role] || ROLE_SKILLS["Frontend Developer"];
-
-    let detectedSkills = [...analysisForm.selectedSkills];
-
-    const link = analysisForm.portfolioLink;
-
-    // detect github repo
-    const githubMatch = link.match(/github\.com\/([^\/]+)\/([^\/]+)/);
-
-    // detect github profile
-    const profileMatch = link.match(/github\.com\/([^\/]+)$/);
-
-    if (githubMatch) {
-
-      const owner = githubMatch[1];
-      const repo = githubMatch[2];
-
-      const repoData = await fetch(
-        `https://api.github.com/repos/${owner}/${repo}`
-      ).then(r => r.json());
-
-      const languages = await fetch(
-        `https://api.github.com/repos/${owner}/${repo}/languages`
-      ).then(r => r.json());
-
-      const languageMap:any = {
-        JavaScript: "JavaScript",
-        HTML: "HTML",
-        CSS: "CSS",
-        TypeScript: "JavaScript"
-      };
-
-      const repoSkills = Object.keys(languages)
-        .map(lang => languageMap[lang])
-        .filter(Boolean);
-
-      detectedSkills = [...new Set([...detectedSkills, ...repoSkills])];
-
-      const repoText =
-        (repoData.name + " " + (repoData.description || "")).toLowerCase();
-
-      if (repoText.includes("react")) detectedSkills.push("React");
-      if (repoText.includes("api")) detectedSkills.push("API Integration");
-      if (repoText.includes("responsive")) detectedSkills.push("Responsive Design");
-
-      detectedSkills.push("Git");
-
-    }
-
-    // github profile analysis
-    else if (profileMatch) {
-
-      const username = profileMatch[1];
-
-      const repos = await fetch(
-        `https://api.github.com/users/${username}/repos`
-      ).then(r => r.json());
-
-      let languagesCollected:any = {};
-
-      for (const repo of repos.slice(0,5)) {
-
-        const langs = await fetch(repo.languages_url).then(r => r.json());
-
-        Object.keys(langs).forEach(lang => {
-          languagesCollected[lang] = true;
+        // ✅ clear signup fields
+        setAuthForm({
+          name: "",
+          email: "",
+          password: ""
         });
 
+        // ✅ go to login page instead of dashboard
+        setPage("login");
+
+      } else {
+
+        const foundUser = storedUsers.find(
+          (u: any) =>
+            u.email === authForm.email &&
+            u.password === authForm.password
+        );
+
+        if (!foundUser) {
+          setError("Invalid email or password");
+          return;
+        }
+
+        setUser(foundUser);
+
+        // clear login fields
+        setAuthForm({
+          name: "",
+          email: "",
+          password: ""
+        });
+
+        setPage("dashboard");
+
       }
 
-      const languageMap:any = {
-        JavaScript: "JavaScript",
-        HTML: "HTML",
-        CSS: "CSS",
-        TypeScript: "JavaScript"
-      };
-
-      const repoSkills = Object.keys(languagesCollected)
-        .map(lang => languageMap[lang])
-        .filter(Boolean);
-
-      detectedSkills = [...new Set([...detectedSkills, ...repoSkills])];
-
-      detectedSkills.push("Git");
+    } catch (err) {
+      setError("Something went wrong");
+    } finally {
+      setLoading(false);
     }
-
-    const uniqueSkills = [...new Set(detectedSkills)];
-    if (uniqueSkills.length === 0) {
-
-  const data = {
-    role: "Not thought yet",
-    suggested: false,
-    readinessScore: 0,
-    missingSkills: [],
-    recommendations: []
   };
 
-  setResult(data);
-  setPage("results");
-  setLoading(false);
-  return;
-}
-    
-let recommendedRole = analysisForm.role;
+  const handleAnalyze = async () => {
+    if (analysisForm.selectedSkills.length === 0) {
+      setError("⚠ Please select at least one skill to analyze your readiness.");
+      return;
+    }
+    if (!user) return;
 
-if (analysisForm.role === "Not thought yet") {
+    setLoading(true);
+    setError('');
 
-  if (uniqueSkills.includes("Python") && uniqueSkills.includes("Machine Learning")) {
-    recommendedRole = "Machine Learning Engineer";
-  }
+    try {
 
-  else if (uniqueSkills.includes("Python")) {
-    recommendedRole = "Data Analyst";
-  }
+      const requiredSkills =
+        ROLE_SKILLS[analysisForm.role] || ROLE_SKILLS["Frontend Developer"];
 
-  else if (uniqueSkills.includes("Node.js") || uniqueSkills.includes("Express.js")) {
-    recommendedRole = "Backend Developer";
-  }
+      let detectedSkills = [...analysisForm.selectedSkills];
 
-  else if (uniqueSkills.includes("Figma")) {
-    recommendedRole = "UI/UX Designer";
-  }
+      const link = analysisForm.portfolioLink;
 
-  else if (uniqueSkills.includes("React") || uniqueSkills.includes("JavaScript")) {
-    recommendedRole = "Frontend Developer";
-  }
+      // detect github repo
+      const githubMatch = link.match(/github\.com\/([^\/]+)\/([^\/]+)/);
 
-  else {
-    recommendedRole = "Software Engineer";
-  }
+      // detect github profile
+      const profileMatch = link.match(/github\.com\/([^\/]+)$/);
 
-}
-const matchedSkills = uniqueSkills.filter(skill =>
-  requiredSkills.includes(skill)
-);
+      if (githubMatch) {
 
-const score = Math.min(
-  100,
-  Math.round((matchedSkills.length / requiredSkills.length) * 100)
-);
+        const owner = githubMatch[1];
+        const repo = githubMatch[2];
 
-const missingSkills = requiredSkills.filter(
-  skill => !matchedSkills.includes(skill)
-);
+        const repoData = await fetch(
+          `https://api.github.com/repos/${owner}/${repo}`
+        ).then(r => r.json());
 
-    let level = "Beginner";
+        const languages = await fetch(
+          `https://api.github.com/repos/${owner}/${repo}/languages`
+        ).then(r => r.json());
 
-    if (score >= 70) level = "Advanced";
-    else if (score >= 40) level = "Intermediate";
+        const languageMap: any = {
+          JavaScript: "JavaScript",
+          HTML: "HTML",
+          CSS: "CSS",
+          TypeScript: "JavaScript"
+        };
 
-const courseMap: any = {
+        const repoSkills = Object.keys(languages)
+          .map(lang => languageMap[lang])
+          .filter(Boolean);
 
-  React: {
-    skill: "React",
-    name: "React Basics",
-    platform: "Coursera",
-    duration: "6 hours",
-    link: "https://www.coursera.org/learn/react-basics"
-  },
+        detectedSkills = [...new Set([...detectedSkills, ...repoSkills])];
 
-  "Node.js": {
-    skill: "Node.js",
-    name: "Node.js Backend Development",
-    platform: "Coursera",
-    duration: "10 hours",
-    link: "https://www.coursera.org/learn/server-side-nodejs"
-  },
+        const repoText =
+          (repoData.name + " " + (repoData.description || "")).toLowerCase();
 
-  MongoDB: {
-    skill: "MongoDB",
-    name: "MongoDB Basics",
-    platform: "MongoDB University",
-    duration: "6 hours",
-    link: "https://learn.mongodb.com/"
-  },
+        if (repoText.includes("react")) detectedSkills.push("React");
+        if (repoText.includes("api")) detectedSkills.push("API Integration");
+        if (repoText.includes("responsive")) detectedSkills.push("Responsive Design");
 
-  "REST API": {
-    skill: "REST API",
-    name: "Build REST APIs with Node.js",
-    platform: "Coursera",
-    duration: "7 hours",
-    link: "https://www.coursera.org/learn/rest-api-nodejs"
-  },
+        detectedSkills.push("Git");
 
-  Authentication: {
-    skill: "Authentication",
-    name: "JWT Authentication Guide",
-    platform: "freeCodeCamp",
-    duration: "3 hours",
-    link: "https://www.freecodecamp.org/news/jwt-authentication-tutorial/"
-  },
+      }
 
-  Python: {
-    skill: "Python",
-    name: "Python for Everybody",
-    platform: "Coursera",
-    duration: "12 hours",
-    link: "https://www.coursera.org/specializations/python"
-  },
+      // github profile analysis
+      else if (profileMatch) {
 
-  Pandas: {
-    skill: "Pandas",
-    name: "Data Analysis with Pandas",
-    platform: "Coursera",
-    duration: "6 hours",
-    link: "https://www.coursera.org/learn/data-analysis-with-python"
-  },
+        const username = profileMatch[1];
 
-  NumPy: {
-    skill: "NumPy",
-    name: "NumPy Full Course",
-    platform: "freeCodeCamp",
-    duration: "4 hours",
-    link: "https://www.freecodecamp.org/news/learn-numpy-full-course/"
-  },
+        const repos = await fetch(
+          `https://api.github.com/users/${username}/repos`
+        ).then(r => r.json());
 
-  MySQL: {
-    skill: "MySQL",
-    name: "SQL for Data Science",
-    platform: "Coursera",
-    duration: "5 hours",
-    link: "https://www.coursera.org/learn/sql-for-data-science"
-  },
+        let languagesCollected: any = {};
 
-  "Machine Learning": {
-    skill: "Machine Learning",
-    name: "Machine Learning by Andrew Ng",
-    platform: "Coursera",
-    duration: "20 hours",
-    link: "https://www.coursera.org/learn/machine-learning"
-  }
+        for (const repo of repos.slice(0, 5)) {
 
-};
+          const langs = await fetch(repo.languages_url).then(r => r.json());
 
-    const recommendations = missingSkills
-      .map(skill => courseMap[skill])
-      .filter(Boolean)
-      .slice(0,3);
+          Object.keys(langs).forEach(lang => {
+            languagesCollected[lang] = true;
+          });
 
-    const data = {
-      role: recommendedRole + ` (${level})`,
-      suggested: true,
-      readinessScore: score,
-      missingSkills: missingSkills,
-      recommendations: recommendations
-    };
+        }
 
-    setResult(data);
-    setPage('results');
+        const languageMap: any = {
+          JavaScript: "JavaScript",
+          HTML: "HTML",
+          CSS: "CSS",
+          TypeScript: "JavaScript"
+        };
 
-  } catch (err) {
-    setError('Analysis failed. Please try again.');
-  } finally {
-    setLoading(false);
-  }
-};
+        const repoSkills = Object.keys(languagesCollected)
+          .map(lang => languageMap[lang])
+          .filter(Boolean);
+
+        detectedSkills = [...new Set([...detectedSkills, ...repoSkills])];
+
+        detectedSkills.push("Git");
+      }
+
+      const uniqueSkills = [...new Set(detectedSkills)];
+
+      let recommendedRole = analysisForm.role;
+
+      if (analysisForm.role === "Not thought yet") {
+
+        if (uniqueSkills.includes("Python") && uniqueSkills.includes("Machine Learning")) {
+          recommendedRole = "Machine Learning Engineer";
+        }
+
+        else if (uniqueSkills.includes("Python")) {
+          recommendedRole = "Data Analyst";
+        }
+
+        else if (uniqueSkills.includes("Node.js") || uniqueSkills.includes("Express.js")) {
+          recommendedRole = "Backend Developer";
+        }
+
+        else if (uniqueSkills.includes("Figma")) {
+          recommendedRole = "UI/UX Designer";
+        }
+
+        else if (uniqueSkills.includes("React") || uniqueSkills.includes("JavaScript")) {
+          recommendedRole = "Frontend Developer";
+        }
+        else {
+          recommendedRole = "Software Engineer";
+        }
+
+      }
+      const matchedSkills = uniqueSkills.filter(skill =>
+        requiredSkills.includes(skill)
+      );
+
+      const score = Math.min(
+        100,
+        Math.round((matchedSkills.length / requiredSkills.length) * 100)
+      );
+
+      const missingSkills = requiredSkills.filter(
+        skill => !matchedSkills.includes(skill)
+      );
+
+      let level = "Beginner";
+
+      if (score >= 70) level = "Advanced";
+      else if (score >= 40) level = "Intermediate";
+
+      const courseMap: any = {
+
+        React: {
+          skill: "React",
+          name: "React Basics",
+          platform: "Coursera",
+          duration: "6 hours",
+          link: "https://www.coursera.org/learn/react-basics"
+        },
+
+        "Node.js": {
+          skill: "Node.js",
+          name: "Node.js Backend Development",
+          platform: "Coursera",
+          duration: "10 hours",
+          link: "https://www.coursera.org/learn/server-side-nodejs"
+        },
+
+        MongoDB: {
+          skill: "MongoDB",
+          name: "MongoDB Basics",
+          platform: "MongoDB University",
+          duration: "6 hours",
+          link: "https://learn.mongodb.com/"
+        },
+
+        "REST API": {
+          skill: "REST API",
+          name: "Build REST APIs with Node.js",
+          platform: "Coursera",
+          duration: "7 hours",
+          link: "https://www.coursera.org/learn/rest-api-nodejs"
+        },
+
+        Authentication: {
+          skill: "Authentication",
+          name: "JWT Authentication Guide",
+          platform: "freeCodeCamp",
+          duration: "3 hours",
+          link: "https://www.freecodecamp.org/news/jwt-authentication-tutorial/"
+        },
+
+        Python: {
+          skill: "Python",
+          name: "Python for Everybody",
+          platform: "Coursera",
+          duration: "12 hours",
+          link: "https://www.coursera.org/specializations/python"
+        },
+
+        Pandas: {
+          skill: "Pandas",
+          name: "Data Analysis with Pandas",
+          platform: "Coursera",
+          duration: "6 hours",
+          link: "https://www.coursera.org/learn/data-analysis-with-python"
+        },
+
+        NumPy: {
+          skill: "NumPy",
+          name: "NumPy Full Course",
+          platform: "freeCodeCamp",
+          duration: "4 hours",
+          link: "https://www.freecodecamp.org/news/learn-numpy-full-course/"
+        },
+
+        MySQL: {
+          skill: "MySQL",
+          name: "SQL for Data Science",
+          platform: "Coursera",
+          duration: "5 hours",
+          link: "https://www.coursera.org/learn/sql-for-data-science"
+        },
+
+        "Machine Learning": {
+          skill: "Machine Learning",
+          name: "Machine Learning by Andrew Ng",
+          platform: "Coursera",
+          duration: "20 hours",
+          link: "https://www.coursera.org/learn/machine-learning"
+        }
+
+      };
+
+      const recommendations = missingSkills
+        .map(skill => courseMap[skill])
+        .filter(Boolean)
+        .slice(0, 3);
+
+      const data = {
+        role: recommendedRole + ` (${level})`,
+        suggested: true,
+        readinessScore: score,
+        missingSkills: missingSkills,
+        recommendations: recommendations
+      };
+
+      setResult(data);
+      setPage('results');
+
+    } catch (err) {
+      setError('Analysis failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const toggleSkill = (skill: string) => {
     setAnalysisForm(prev => ({
@@ -535,7 +522,7 @@ const courseMap: any = {
               Career Compass
             </span>
           </div>
-          
+
           <div className="flex items-center gap-4">
             {user ? (
               <div className="flex items-center gap-4">
@@ -543,7 +530,7 @@ const courseMap: any = {
                   <User className="w-4 h-4 text-emerald-400" />
                   <span className="text-sm font-medium">{user.name}</span>
                 </div>
-                <button 
+                <button
                   onClick={handleLogout}
                   className="p-2 hover:bg-red-500/10 hover:text-red-400 rounded-lg transition-colors"
                 >
@@ -552,13 +539,13 @@ const courseMap: any = {
               </div>
             ) : (
               <div className="flex gap-2">
-                <button 
+                <button
                   onClick={() => setPage('login')}
                   className="px-4 py-2 text-sm font-medium hover:text-white transition-colors"
                 >
                   Login
                 </button>
-                <button 
+                <button
                   onClick={() => setPage('signup')}
                   className="px-4 py-2 text-sm font-medium bg-emerald-500 text-white rounded-lg hover:bg-emerald-400 transition-all shadow-lg shadow-emerald-500/20"
                 >
@@ -573,7 +560,7 @@ const courseMap: any = {
       <main className="pt-24 pb-12 px-4 max-w-7xl mx-auto">
         <AnimatePresence mode="wait">
           {page === 'landing' && (
-            <motion.div 
+            <motion.div
               key="landing"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -590,20 +577,20 @@ const courseMap: any = {
                 Analyze your skills, identify gaps, and get personalized course recommendations to become job-ready in weeks.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <button 
+                <button
                   onClick={() => setPage('signup')}
                   className="px-8 py-4 bg-emerald-500 text-white rounded-xl font-semibold hover:bg-emerald-400 transition-all shadow-xl shadow-emerald-500/20 flex items-center justify-center gap-2"
                 >
                   Start Your Journey <ChevronRight className="w-5 h-5" />
                 </button>
-                <button 
+                <button
                   onClick={() => setPage('login')}
                   className="px-8 py-4 bg-white/5 border border-white/10 rounded-xl font-semibold hover:bg-white/10 transition-all"
                 >
                   View Demo
                 </button>
               </div>
-              
+
               <div className="mt-24 grid grid-cols-1 md:grid-cols-3 gap-8">
                 {[
                   { icon: LayoutDashboard, title: "Skill Analysis", desc: "Compare your current skills with industry requirements." },
@@ -623,7 +610,7 @@ const courseMap: any = {
           )}
 
           {(page === 'login' || page === 'signup') && (
-            <motion.div 
+            <motion.div
               key="auth"
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -637,15 +624,15 @@ const courseMap: any = {
                 <p className="text-slate-400 text-center mb-8">
                   {page === 'login' ? 'Enter your details to continue' : 'Join thousands of career-ready students'}
                 </p>
-                
+
                 <div className="space-y-4">
                   {page === 'signup' && (
                     <div>
                       <label className="block text-sm font-medium text-slate-400 mb-1.5">Full Name</label>
-                      <input 
+                      <input
                         type="text"
                         value={authForm.name}
-                        onChange={e => setAuthForm({...authForm, name: e.target.value})}
+                        onChange={e => setAuthForm({ ...authForm, name: e.target.value })}
                         className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all"
                         placeholder="John Doe"
                       />
@@ -653,33 +640,33 @@ const courseMap: any = {
                   )}
                   <div>
                     <label className="block text-sm font-medium text-slate-400 mb-1.5">Email Address</label>
-                    <input 
+                    <input
                       type="email"
                       value={authForm.email}
-                      onChange={e => setAuthForm({...authForm, email: e.target.value})}
+                      onChange={e => setAuthForm({ ...authForm, email: e.target.value })}
                       className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all"
                       placeholder="john@example.com"
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-slate-400 mb-1.5">Password</label>
-                    <input 
+                    <input
                       type="password"
                       value={authForm.password}
-                      onChange={e => setAuthForm({...authForm, password: e.target.value})}
+                      onChange={e => setAuthForm({ ...authForm, password: e.target.value })}
                       className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all"
                       placeholder="••••••••"
                     />
                   </div>
-                  
+
                   {error && (
                     <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-sm flex items-center gap-2">
                       <AlertCircle className="w-4 h-4" /> {error}
                     </div>
                   )}
 
-                  <button 
-                  type="button"
+                  <button
+                    type="button"
                     onClick={() => handleAuth(page as 'login' | 'signup')}
                     disabled={loading}
                     className="w-full py-4 bg-emerald-500 text-white rounded-xl font-bold hover:bg-emerald-400 transition-all shadow-lg shadow-emerald-500/20 disabled:opacity-50 mt-4"
@@ -687,10 +674,10 @@ const courseMap: any = {
                     {loading ? 'Processing...' : (page === 'login' ? 'Sign In' : 'Create Account')}
                   </button>
                 </div>
-                
+
                 <p className="mt-6 text-center text-slate-400 text-sm">
                   {page === 'login' ? "Don't have an account? " : "Already have an account? "}
-                  <button 
+                  <button
                     onClick={() => setPage(page === 'login' ? 'signup' : 'login')}
                     className="text-emerald-400 font-semibold hover:underline"
                   >
@@ -702,7 +689,7 @@ const courseMap: any = {
           )}
 
           {page === 'dashboard' && (
-            <motion.div 
+            <motion.div
               key="dashboard"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -725,10 +712,10 @@ const courseMap: any = {
                     </div>
                     <h3 className="text-xl font-bold">Portfolio & Resume</h3>
                   </div>
-                  <input 
+                  <input
                     type="url"
                     value={analysisForm.portfolioLink}
-                    onChange={e => setAnalysisForm({...analysisForm, portfolioLink: e.target.value})}
+                    onChange={e => setAnalysisForm({ ...analysisForm, portfolioLink: e.target.value })}
                     className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all"
                     placeholder="GitHub link / Portfolio website / Drive resume link"
                   />
@@ -746,12 +733,11 @@ const courseMap: any = {
                     {ROLES_LIST.map(role => (
                       <button
                         key={role}
-                        onClick={() => setAnalysisForm({...analysisForm, role})}
-                        className={`px-4 py-3 rounded-xl text-sm font-medium border transition-all ${
-                          analysisForm.role === role 
-                            ? 'bg-emerald-500 border-emerald-500 text-white shadow-lg shadow-emerald-500/20' 
-                            : 'bg-white/5 border-white/10 text-slate-400 hover:border-white/20'
-                        }`}
+                        onClick={() => setAnalysisForm({ ...analysisForm, role })}
+                        className={`px-4 py-3 rounded-xl text-sm font-medium border transition-all ${analysisForm.role === role
+                          ? 'bg-emerald-500 border-emerald-500 text-white shadow-lg shadow-emerald-500/20'
+                          : 'bg-white/5 border-white/10 text-slate-400 hover:border-white/20'
+                          }`}
                       >
                         {role}
                       </button>
@@ -772,11 +758,10 @@ const courseMap: any = {
                       <button
                         key={skill}
                         onClick={() => toggleSkill(skill)}
-                        className={`px-4 py-2 rounded-full text-sm font-medium border transition-all flex items-center gap-2 ${
-                          analysisForm.selectedSkills.includes(skill)
-                            ? 'bg-emerald-500/20 border-emerald-500 text-emerald-400'
-                            : 'bg-white/5 border-white/10 text-slate-400 hover:border-white/20'
-                        }`}
+                        className={`px-4 py-2 rounded-full text-sm font-medium border transition-all flex items-center gap-2 ${analysisForm.selectedSkills.includes(skill)
+                          ? 'bg-emerald-500/20 border-emerald-500 text-emerald-400'
+                          : 'bg-white/5 border-white/10 text-slate-400 hover:border-white/20'
+                          }`}
                       >
                         {analysisForm.selectedSkills.includes(skill) && <CheckCircle2 className="w-4 h-4" />}
                         {skill}
@@ -785,9 +770,9 @@ const courseMap: any = {
                   </div>
                 </div>
 
-                <button 
+                <button
                   onClick={handleAnalyze}
-                  disabled={loading || !analysisForm.portfolioLink}
+                  disabled={loading || analysisForm.selectedSkills.length === 0}
                   className="w-full py-5 bg-gradient-to-r from-emerald-500 to-cyan-500 text-white rounded-2xl font-bold text-lg hover:scale-[1.02] active:scale-[0.98] transition-all shadow-2xl shadow-emerald-500/20 disabled:opacity-50"
                 >
                   {loading ? 'Analyzing Portfolio...' : 'Analyze My Readiness'}
@@ -797,14 +782,14 @@ const courseMap: any = {
           )}
 
           {page === 'results' && result && (
-            <motion.div 
+            <motion.div
               key="results"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               className="max-w-4xl mx-auto"
             >
-              <button 
+              <button
                 onClick={() => setPage('dashboard')}
                 className="mb-8 text-slate-400 hover:text-white flex items-center gap-2 transition-colors"
               >
@@ -818,7 +803,7 @@ const courseMap: any = {
                     <div>
                       <h3 className="text-2xl font-bold mb-1">Analysis Result</h3>
                       <p className="text-slate-400">
-                        {result.suggested ? 'Based on your skills, we suggest:' : 'Target Role:'} 
+                        {result.suggested ? 'Based on your skills, we suggest:' : 'Target Role:'}
                         <span className="text-emerald-400 font-semibold ml-1">{result.role}</span>
                       </p>
                     </div>
@@ -829,15 +814,14 @@ const courseMap: any = {
                   </div>
 
                   <div className="relative h-4 bg-white/5 rounded-full overflow-hidden mb-12">
-                    <motion.div 
+                    <motion.div
                       initial={{ width: 0 }}
                       animate={{ width: `${result.readinessScore}%` }}
                       transition={{ duration: 1, ease: "easeOut" }}
-                      className={`absolute top-0 left-0 h-full bg-gradient-to-r ${
-                        result.readinessScore > 70 ? 'from-emerald-500 to-cyan-500' : 
-                        result.readinessScore > 40 ? 'from-yellow-500 to-orange-500' : 
-                        'from-red-500 to-pink-500'
-                      }`}
+                      className={`absolute top-0 left-0 h-full bg-gradient-to-r ${result.readinessScore > 70 ? 'from-emerald-500 to-cyan-500' :
+                        result.readinessScore > 40 ? 'from-yellow-500 to-orange-500' :
+                          'from-red-500 to-pink-500'
+                        }`}
                     />
                   </div>
 
@@ -881,7 +865,7 @@ const courseMap: any = {
                 <h3 className="text-2xl font-bold mb-8">Recommended Courses</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {result.recommendations.map((course, i) => (
-                    <motion.div 
+                    <motion.div
                       key={i}
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
@@ -896,9 +880,9 @@ const courseMap: any = {
                       </div>
                       <h4 className="text-lg font-bold mb-1 group-hover:text-emerald-400 transition-colors">{course.name}</h4>
                       <p className="text-sm text-slate-400 mb-6">{course.platform}</p>
-                      <a 
-                        href={course.link} 
-                        target="_blank" 
+                      <a
+                        href={course.link}
+                        target="_blank"
                         rel="noopener noreferrer"
                         className="w-full py-3 bg-white/5 border border-white/10 rounded-xl text-sm font-bold flex items-center justify-center gap-2 hover:bg-white/10 transition-all"
                       >

@@ -36,13 +36,26 @@ It evaluates the technologies used, calculates a readiness score, identifies mis
 - Missing Skills  
 - Recommended Courses
 ## 📸 Screenshots:
+## 📸 Screenshots
+
+### Login Page
+![Login](./screenshots/login.png)
+
+### Skill Selection Interface
+![Interface](./screenshots/interface.png)
+
+### Dashboard
+![Dashboard](./screenshots/dashboard.png)
+
+### Analysis Result
+![Analysis](./screenshots/analysis.png)
 
 ## 🌐 Live Demo
-
-Add your deployed website link here:
+https://career-compass-bice.vercel.app/
 
 ## 💻 GitHub Repository
 https://github.com/hematutaa96/career-compass
+
 ## 🔮 Future Improvements
 • AI based portfolio analysis  
 • Resume analysis using NLP  

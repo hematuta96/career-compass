@@ -54,7 +54,7 @@ It evaluates the technologies used, calculates a readiness score, identifies mis
 https://career-compass-bice.vercel.app/
 
 ## 💻 GitHub Repository
-https://github.com/hematutaa96/career-compass
+https://github.com/hematuta96/career-compass
 
 ## 🔮 Future Improvements
 • AI based portfolio analysis  
